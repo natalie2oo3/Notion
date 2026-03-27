@@ -430,7 +430,7 @@ function render(tasks) {
     upcomingRemind.slice(0, 12).forEach(r => {
       const d = daysUntil(r.start.split('T')[0]);
       const dateStr = (() => {
-        const dt = new Date(r.start + 'T00:00:00');
+        const dt = new Date(r.start.split('T')[0] + 'T00:00:00');
         return `${MONTHS[dt.getMonth()]}${dt.getDate()}日`;
       })();
       const daysLabel = d === 0 ? '今天' : d === 1 ? '明天' : `还有 ${d} 天`;
