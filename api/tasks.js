@@ -46,6 +46,12 @@ export default async function handler(req) {
     sorts: [{ property: "Start", direction: "ascending" }],
   };
 
+  // 🔍 调试日志 1: 打印请求信息
+  console.log("=== Notion API Request Debug ===");
+  console.log("DATABASE_ID:", DATABASE_ID);
+  console.log("NOTION_TOKEN exists:", !!NOTION_TOKEN);
+  console.log("Request body:", JSON.stringify(body, null, 2));
+
   const res = await fetch(
     `https://api.notion.com/v1/databases/${DATABASE_ID}/query`,
     {
@@ -59,10 +65,25 @@ export default async function handler(req) {
     }
   );
 
+  // 🔍 调试日志 2: 打印响应状态
+  console.log("Response status:", res.status);
+  console.log("Response ok:", res.ok);
+
   const data = await res.json();
 
+  // 🔍 调试日志 3: 打印完整的响应数据
+  console.log("Response data:", JSON.stringify(data, null, 2));
+
   if (!res.ok) {
-    return new Response(JSON.stringify(data), {
+    // 返回完整的错误信息给前端，便于查看
+    return new Response(JSON.stringify({
+      error: data,
+      debug: {
+        status: res.status,
+        databaseId: DATABASE_ID,
+        requestBody: body
+      }
+    }), {
       status: res.status,
       headers: corsHeaders("application/json"),
     });
