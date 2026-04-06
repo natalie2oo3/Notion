@@ -210,6 +210,8 @@
   .tag-event { background: var(--event-bg); color: var(--event-text); }
   .tag-reminder { background: var(--reminder-bg); color: var(--reminder-text); }
 
+  .done-line { text-decoration: line-through; color: var(--muted); }
+
   /* NOW line */
   .now-row {
     display: flex;
@@ -369,15 +371,15 @@ function render(tasks) {
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
 
-  const todayEvents    = tasks.filter(t => t.type === 'Event' && t.start && t.start.startsWith(today));
-  const upcomingRemind = tasks.filter(t => t.type === 'Reminder');
+  const todayItems    = tasks.filter(t => t.start && t.start.startsWith(today));
+  const upcomingItems  = tasks.filter(t => t.start && !t.start.startsWith(today));
 
   // stat pills
   const statRow = document.getElementById('stat-row');
   statRow.innerHTML = `
     <div class="stat-pill"><span class="stat-num" id="clock">--:--</span> 现在</div>
-    <div class="stat-pill"><span class="stat-num">${todayEvents.length}</span> 今日事件</div>
-    <div class="stat-pill"><span class="stat-num">${upcomingRemind.length}</span> 待提醒</div>
+    <div class="stat-pill"><span class="stat-num">${todayItems.length}</span> 今日</div>
+    <div class="stat-pill"><span class="stat-num">${upcomingItems.length}</span> 即将到来</div>
   `;
   updateClock();
 
@@ -385,10 +387,10 @@ function render(tasks) {
   let timelineHTML = '';
   let nowInserted = false;
 
-  if (todayEvents.length === 0) {
-    timelineHTML = `<div class="empty">今天没有安排的事件 ✦</div>`;
+  if (todayItems.length === 0) {
+    timelineHTML = `<div class="empty">今天没有安排 ✦</div>`;
   } else {
-    todayEvents.forEach(ev => {
+    todayItems.forEach(ev => {
       const mins = toMinutes(ev.start);
       if (!nowInserted && mins !== null && mins > nowMins) {
         nowInserted = true;
@@ -402,12 +404,13 @@ function render(tasks) {
       const time = fmtTime(ev.start);
       const tagClass = ev.type === 'Event' ? 'tag-event' : 'tag-reminder';
       const dotClass = ev.type === 'Event' ? 'event' : '';
+      const doneClass = ev.status === 'Done' ? 'done-line' : '';
       timelineHTML += `
         <div class="tl-item">
           <div class="tl-time">${time}</div>
           <div class="tl-dot-col"><div class="tl-dot ${dotClass}"></div></div>
           <div class="tl-card">
-            <div class="tl-name">${ev.name}</div>
+            <div class="tl-name ${doneClass}">${ev.name}</div>
             <span class="tl-tag ${tagClass}">${ev.type}</span>
           </div>
         </div>`;
@@ -424,20 +427,21 @@ function render(tasks) {
 
   // build upcoming
   let upcomingHTML = '';
-  if (upcomingRemind.length === 0) {
-    upcomingHTML = `<div class="empty" style="padding:20px 0">暂无近期提醒</div>`;
+  if (upcomingItems.length === 0) {
+    upcomingHTML = `<div class="empty" style="padding:20px 0">暂无近期安排</div>`;
   } else {
-    upcomingRemind.slice(0, 12).forEach(r => {
+    upcomingItems.slice(0, 12).forEach(r => {
       const d = daysUntil(r.start.split('T')[0]);
       const dateStr = (() => {
         const dt = new Date(r.start.split('T')[0] + 'T00:00:00');
         return `${MONTHS[dt.getMonth()]}${dt.getDate()}日`;
       })();
       const daysLabel = d === 0 ? '今天' : d === 1 ? '明天' : `还有 ${d} 天`;
+      const doneClass = r.status === 'Done' ? 'done-line' : '';
       upcomingHTML += `
         <div class="upcoming-card">
           <div class="upcoming-date-label">${dateStr}</div>
-          <div class="upcoming-name">${r.name}</div>
+          <div class="upcoming-name ${doneClass}">${r.name}</div>
           <div class="upcoming-days">${daysLabel}</div>
         </div>`;
     });
