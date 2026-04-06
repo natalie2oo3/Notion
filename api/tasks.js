@@ -17,29 +17,18 @@ export default async function handler(req) {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Fetch events today + reminders in the next 90 days
+  // Fetch all items from today to today+90 days regardless of type
   const body = {
     filter: {
-      or: [
+      and: [
+        { property: "Start", date: { on_or_after: today } },
         {
-          and: [
-            { property: "Type", select: { equals: "Event" } },
-            { property: "Start", date: { equals: today } },
-          ],
-        },
-        {
-          and: [
-            { property: "Type", select: { equals: "Reminder" } },
-            { property: "Start", date: { on_or_after: today } },
-            {
-              property: "Start",
-              date: {
-                on_or_before: new Date(Date.now() + 90 * 86400000)
-                  .toISOString()
-                  .split("T")[0],
-              },
-            },
-          ],
+          property: "Start",
+          date: {
+            on_or_before: new Date(Date.now() + 90 * 86400000)
+              .toISOString()
+              .split("T")[0],
+          },
         },
       ],
     },
