@@ -5,48 +5,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Today</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #fafaf8;
+    --bg: #f8f7f4;
+    --bg-paper: #faf9f6;
     --card: #ffffff;
-    --border: rgba(0,0,0,0.08);
-    --border-strong: rgba(0,0,0,0.14);
+    --rule: rgba(0,0,0,0.12);
+    --rule-light: rgba(0,0,0,0.06);
     --text: #1a1a1a;
-    --muted: #888;
+    --text-secondary: #555;
+    --muted: #999;
     --hint: #bbb;
-    --event-bg: #fff0f0;
-    --event-dot: #e24b4a;
+    --event-dot: #d44;
     --event-text: #a32d2d;
-    --reminder-bg: #f2f1ee;
+    --event-bg: rgba(212,68,68,0.06);
     --reminder-dot: #aaa;
-    --reminder-text: #5f5e5a;
+    --reminder-text: #6b6a65;
+    --reminder-bg: rgba(0,0,0,0.03);
     --green: #1d9e75;
-    --green-bg: #eaf7f1;
+    --green-faint: rgba(29,158,117,0.08);
     --accent: #1a1a1a;
+    --noise-opacity: 0.3;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #111110;
-      --card: #1c1c1a;
-      --border: rgba(255,255,255,0.08);
-      --border-strong: rgba(255,255,255,0.14);
-      --text: #f0ede8;
-      --muted: #888;
-      --hint: #555;
-      --event-bg: #2d1818;
+      --bg: #121210;
+      --bg-paper: #171714;
+      --card: #1e1e1b;
+      --rule: rgba(255,255,255,0.1);
+      --rule-light: rgba(255,255,255,0.05);
+      --text: #ece9e1;
+      --text-secondary: #a5a29a;
+      --muted: #706e68;
+      --hint: #4a4842;
       --event-dot: #e24b4a;
       --event-text: #f09595;
-      --reminder-bg: #222220;
-      --reminder-dot: #666;
-      --reminder-text: #b4b2a9;
+      --event-bg: rgba(226,75,74,0.08);
+      --reminder-dot: #5a5850;
+      --reminder-text: #a5a29a;
+      --reminder-bg: rgba(255,255,255,0.03);
       --green: #1d9e75;
-      --green-bg: #0d2e22;
-      --accent: #f0ede8;
+      --green-faint: rgba(29,158,117,0.1);
+      --accent: #ece9e1;
+      --noise-opacity: 0.15;
     }
+  }
+
+  /* ---- PAPER TEXTURE ---- */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: var(--noise-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
   }
 
   body {
@@ -54,311 +72,471 @@
     color: var(--text);
     font-family: 'DM Sans', system-ui, sans-serif;
     font-size: 14px;
-    line-height: 1.6;
-    padding: 28px 24px 40px;
-    min-height: 100vh;
-  }
-
-  .header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-
-  h1 {
-    font-family: 'DM Serif Display', Georgia, serif;
-    font-size: 36px;
     font-weight: 400;
-    letter-spacing: -0.5px;
-    color: var(--text);
+    line-height: 1.65;
+    min-height: 100vh;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 28px 48px;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .date-chip {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .day-progress-wrap {
-    height: 2px;
-    background: var(--border);
-    border-radius: 99px;
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-
-  .day-progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 99px;
-    transition: width 1s ease;
-  }
-
-  .stat-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+  /* ---- MASTHEAD ---- */
+  .masthead {
+    border-top: 2px solid var(--accent);
+    padding-top: 2px;
     margin-bottom: 28px;
   }
 
-  .stat-pill {
-    background: var(--reminder-bg);
-    border-radius: 99px;
-    padding: 5px 12px;
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  .masthead-inner {
+    border-top: 0.5px solid var(--accent);
+    padding-top: 20px;
   }
 
-  .stat-num {
-    font-size: 14px;
-    font-weight: 500;
+  .masthead-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .masthead h1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
     color: var(--text);
   }
 
-  .section-title {
+  .masthead-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .masthead-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---- DAY PROGRESS ---- */
+  .day-progress {
+    margin: 20px 0 24px;
+    position: relative;
+  }
+
+  .day-progress-track {
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .day-progress-fill {
+    height: 1px;
+    background: var(--accent);
+    transition: width 1s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .day-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .day-progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 300;
+    color: var(--hint);
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- STATS ---- */
+  .stat-line {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .stat-line .sep {
+    color: var(--hint);
+    user-select: none;
+  }
+
+  .stat-line .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  /* ---- SECTION HEADING ---- */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .section-head .label {
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--hint);
-    margin-bottom: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+    font-variant: small-caps;
+  }
+
+  .section-head .rule {
+    flex: 1;
+    height: 0.5px;
+    background: var(--rule);
   }
 
   /* ---- TIMELINE ---- */
   .timeline {
-    position: relative;
-    margin-bottom: 32px;
-  }
-
-  .tl-line {
-    position: absolute;
-    left: 50px;
-    top: 0; bottom: 0;
-    width: 1px;
-    background: var(--border);
+    margin-bottom: 10px;
   }
 
   .tl-item {
     display: flex;
-    align-items: flex-start;
-    margin-bottom: 8px;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 0.5px solid var(--rule-light);
     position: relative;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .tl-item:last-child {
+    border-bottom: none;
   }
 
   .tl-time {
-    width: 50px;
+    width: 54px;
     flex-shrink: 0;
-    font-size: 11px;
-    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 300;
     color: var(--muted);
-    padding-top: 13px;
-    text-align: right;
-    padding-right: 0;
     letter-spacing: 0.02em;
+    padding-right: 12px;
+    text-align: right;
   }
 
-  .tl-dot-col {
-    width: 28px;
-    display: flex;
-    justify-content: center;
-    padding-top: 17px;
+  .tl-indicator {
+    width: 20px;
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1px;
   }
 
   .tl-dot {
-    width: 7px;
-    height: 7px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: var(--reminder-dot);
   }
 
   .tl-dot.event { background: var(--event-dot); }
 
-  .tl-card {
+  .tl-body {
     flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 9px 13px;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
+    min-width: 0;
   }
 
   .tl-name {
     font-size: 14px;
     color: var(--text);
+    line-height: 1.4;
   }
 
   .tl-tag {
-    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
     font-weight: 500;
-    padding: 2px 9px;
-    border-radius: 99px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
     flex-shrink: 0;
   }
 
-  .tag-event { background: var(--event-bg); color: var(--event-text); }
-  .tag-reminder { background: var(--reminder-bg); color: var(--reminder-text); }
+  .tag-event {
+    background: var(--event-bg);
+    color: var(--event-text);
+  }
 
-  .done-line { text-decoration: line-through; color: var(--muted); }
+  .tag-reminder {
+    background: var(--reminder-bg);
+    color: var(--reminder-text);
+  }
 
-  /* NOW line */
-  .now-row {
+  .done-line {
+    text-decoration: line-through;
+    text-decoration-thickness: 0.5px;
+    color: var(--muted);
+  }
+
+  /* ---- NOW MARKER ---- */
+  .now-marker {
     display: flex;
     align-items: center;
-    gap: 0;
-    margin: 6px 0;
-    padding-left: 50px;
+    gap: 8px;
+    padding: 8px 0;
+    padding-left: 54px;
   }
 
-  .now-dot-space {
-    width: 28px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .now-dot-live {
-    width: 7px;
-    height: 7px;
+  .now-pip {
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: var(--green);
-    box-shadow: 0 0 0 3px rgba(29,158,117,0.2);
+    box-shadow: 0 0 0 3px var(--green-faint);
     flex-shrink: 0;
+    animation: pulse 2.5s ease-in-out infinite;
   }
 
-  .now-label {
+  .now-text {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 400;
     color: var(--green);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    margin-right: 8px;
     flex-shrink: 0;
   }
 
-  .now-stripe {
+  .now-rule {
     flex: 1;
-    height: 1px;
+    height: 0.5px;
     background: var(--green);
-    opacity: 0.3;
+    opacity: 0.25;
   }
 
-  /* ---- UPCOMING GRID ---- */
-  .upcoming-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 3px var(--green-faint); }
+    50% { box-shadow: 0 0 0 6px var(--green-faint); }
+  }
+
+  /* ---- DIVIDER ---- */
+  .editorial-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 28px 0;
+    gap: 12px;
+  }
+
+  .editorial-divider .line {
+    flex: 1;
+    height: 0.5px;
+    background: var(--rule);
+  }
+
+  .editorial-divider .ornament {
+    font-size: 8px;
+    color: var(--hint);
+    letter-spacing: 0.3em;
+    user-select: none;
+  }
+
+  /* ---- UPCOMING (NEWSPAPER COLUMNS) ---- */
+  .upcoming-list {
+    column-count: 2;
+    column-gap: 24px;
+    column-rule: 0.5px solid var(--rule-light);
+  }
+
+  .upcoming-item {
+    break-inside: avoid;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--rule-light);
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .upcoming-meta {
+    display: flex;
+    align-items: baseline;
     gap: 8px;
+    margin-bottom: 2px;
   }
 
-  .upcoming-card {
-    background: var(--reminder-bg);
-    border-radius: 10px;
-    padding: 12px 13px;
-  }
-
-  .upcoming-date-label {
+  .upcoming-date {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
+    font-weight: 300;
     color: var(--muted);
-    margin-bottom: 3px;
     letter-spacing: 0.04em;
-  }
-
-  .upcoming-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
   }
 
   .upcoming-days {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 4px;
+    font-size: 10px;
+    color: var(--hint);
+    letter-spacing: 0.02em;
   }
 
-  /* ---- EMPTY / ERROR ---- */
-  .empty {
+  .upcoming-name {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.45;
+  }
+
+  .upcoming-type {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* ---- FOOTER ---- */
+  .editorial-footer {
+    margin-top: 40px;
+    padding-top: 12px;
+    border-top: 0.5px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .editorial-footer span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hint);
+  }
+
+  /* ---- STATES ---- */
+  .empty-state {
     text-align: center;
     color: var(--muted);
-    font-size: 14px;
-    padding: 40px 0;
+    font-size: 13px;
+    font-style: italic;
+    padding: 36px 0;
+    letter-spacing: 0.01em;
   }
 
-  .loading {
+  .loading-state {
     text-align: center;
     color: var(--hint);
-    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
     padding: 60px 0;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
   }
 
-  hr.divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 24px 0;
+  /* ---- ANIMATION ---- */
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  #clock { font-weight: 500; color: var(--text); }
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 480px) {
+    body { padding: 24px 20px 40px; }
+    .masthead h1 { font-size: 34px; }
+    .upcoming-list { column-count: 1; column-rule: none; }
+    .masthead-row { flex-direction: column; gap: 2px; }
+    .masthead-date { text-align: left; }
+  }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Today</h1>
-  <div class="date-chip" id="date-label"></div>
-</div>
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-row">
+      <h1>Today</h1>
+      <div class="masthead-date" id="date-label"></div>
+    </div>
+    <div class="masthead-subtitle" id="subtitle">日程一览</div>
+  </div>
+</header>
 
-<div class="day-progress-wrap">
+<!-- DAY PROGRESS -->
+<div class="day-progress">
+  <div class="day-progress-track"></div>
   <div class="day-progress-fill" id="day-bar"></div>
+  <div class="day-progress-labels">
+    <span class="day-progress-label">00:00</span>
+    <span class="day-progress-label" id="clock">--:--</span>
+    <span class="day-progress-label">24:00</span>
+  </div>
 </div>
 
-<div class="stat-row" id="stat-row">
-  <div class="stat-pill"><span class="stat-num" id="clock">--:--</span> 现在</div>
+<!-- STATS -->
+<div class="stat-line" id="stat-line">
+  <span>加载中…</span>
 </div>
 
-<div id="main-content"><div class="loading">加载中…</div></div>
+<!-- MAIN -->
+<main id="main-content">
+  <div class="loading-state">LOADING…</div>
+</main>
+
+<!-- FOOTER -->
+<footer class="editorial-footer" id="footer">
+  <span id="vol-label"></span>
+  <span>Notion × Vercel</span>
+</footer>
 
 <script>
-const WEEKDAYS = ['周日','周一','周二','周三','周四','周五','周六'];
-const MONTHS   = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const WEEKDAYS_EN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_ZH = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
-function fmtDate(d) {
-  return `${d.getFullYear()}年${MONTHS[d.getMonth()]}${d.getDate()}日`;
+function fmtDateEditorial(d) {
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${WEEKDAYS_EN[d.getDay()].toUpperCase()} · ${MONTHS_EN[d.getMonth()]} ${day}, ${d.getFullYear()}`;
+}
+
+function fmtDateZh(d) {
+  return `${d.getFullYear()}年${MONTHS_ZH[d.getMonth()]}${d.getDate()}日`;
 }
 
 function fmtTime(isoStr) {
   if (!isoStr) return '';
-  const t = isoStr.includes('T') ? isoStr.split('T')[1].slice(0,5) : '';
-  return t;
+  return isoStr.includes('T') ? isoStr.split('T')[1].slice(0,5) : '';
 }
 
 function daysUntil(isoStr) {
   const target = new Date(isoStr + 'T00:00:00');
-  const today  = new Date(); today.setHours(0,0,0,0);
-  return Math.round((target - today) / 86400000);
-}
-
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('clock').textContent = h + ':' + m;
-
-  const pct = Math.round(((now.getHours() * 60 + now.getMinutes()) / 1440) * 100);
-  document.getElementById('day-bar').style.width = pct + '%';
-
   const today = new Date(); today.setHours(0,0,0,0);
-  document.getElementById('date-label').textContent =
-    WEEKDAYS[today.getDay()] + ' · ' + fmtDate(today);
+  return Math.round((target - today) / 86400000);
 }
 
 function toMinutes(isoStr) {
@@ -367,95 +545,129 @@ function toMinutes(isoStr) {
   return parseInt(h) * 60 + parseInt(m);
 }
 
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = h + ':' + m;
+
+  const pct = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
+  document.getElementById('day-bar').style.width = pct + '%';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  document.getElementById('date-label').textContent = fmtDateEditorial(today);
+
+  // Vol label = Week number
+  const startOfYear = new Date(today.getFullYear(), 0, 1);
+  const weekNum = Math.ceil(((today - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+  const dayOfYear = Math.ceil((today - startOfYear) / 86400000) + 1;
+  document.getElementById('vol-label').textContent = `Vol. ${today.getFullYear()} · No. ${weekNum} · Day ${dayOfYear}`;
+}
+
 function render(tasks) {
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
 
-  const todayItems    = tasks.filter(t => t.start && t.start.startsWith(today));
-  const upcomingItems  = tasks.filter(t => t.start && !t.start.startsWith(today));
+  const todayItems = tasks.filter(t => t.start && t.start.startsWith(today));
+  const upcomingItems = tasks.filter(t => t.start && !t.start.startsWith(today));
 
-  // stat pills
-  const statRow = document.getElementById('stat-row');
-  statRow.innerHTML = `
-    <div class="stat-pill"><span class="stat-num" id="clock">--:--</span> 现在</div>
-    <div class="stat-pill"><span class="stat-num">${todayItems.length}</span> 今日</div>
-    <div class="stat-pill"><span class="stat-num">${upcomingItems.length}</span> 即将到来</div>
+  // Stats
+  const doneToday = todayItems.filter(t => t.status === 'Done').length;
+  document.getElementById('stat-line').innerHTML = `
+    <span class="val">${todayItems.length}</span> 项今日日程
+    <span class="sep">·</span>
+    <span class="val">${doneToday}</span> 已完成
+    <span class="sep">·</span>
+    <span class="val">${upcomingItems.length}</span> 项即将到来
   `;
   updateClock();
 
-  // build timeline
+  // Timeline
   let timelineHTML = '';
   let nowInserted = false;
+  let delay = 0;
 
   if (todayItems.length === 0) {
-    timelineHTML = `<div class="empty">今天没有安排 ✦</div>`;
+    timelineHTML = '<div class="empty-state">今日尚无安排</div>';
   } else {
     todayItems.forEach(ev => {
       const mins = toMinutes(ev.start);
       if (!nowInserted && mins !== null && mins > nowMins) {
         nowInserted = true;
         timelineHTML += `
-          <div class="now-row">
-            <div class="now-dot-space"><div class="now-dot-live"></div></div>
-            <span class="now-label">现在</span>
-            <div class="now-stripe"></div>
+          <div class="now-marker">
+            <div class="now-pip"></div>
+            <span class="now-text">Now</span>
+            <div class="now-rule"></div>
           </div>`;
       }
       const time = fmtTime(ev.start);
-      const tagClass = ev.type === 'Event' ? 'tag-event' : 'tag-reminder';
       const dotClass = ev.type === 'Event' ? 'event' : '';
+      const tagClass = ev.type === 'Event' ? 'tag-event' : 'tag-reminder';
       const doneClass = ev.status === 'Done' ? 'done-line' : '';
       timelineHTML += `
-        <div class="tl-item">
+        <div class="tl-item" style="animation-delay:${delay}ms">
           <div class="tl-time">${time}</div>
-          <div class="tl-dot-col"><div class="tl-dot ${dotClass}"></div></div>
-          <div class="tl-card">
-            <div class="tl-name ${doneClass}">${ev.name}</div>
+          <div class="tl-indicator"><div class="tl-dot ${dotClass}"></div></div>
+          <div class="tl-body">
+            <span class="tl-name ${doneClass}">${ev.name}</span>
             <span class="tl-tag ${tagClass}">${ev.type}</span>
           </div>
         </div>`;
+      delay += 50;
     });
     if (!nowInserted) {
       timelineHTML += `
-        <div class="now-row">
-          <div class="now-dot-space"><div class="now-dot-live"></div></div>
-          <span class="now-label">现在</span>
-          <div class="now-stripe"></div>
+        <div class="now-marker">
+          <div class="now-pip"></div>
+          <span class="now-text">Now</span>
+          <div class="now-rule"></div>
         </div>`;
     }
   }
 
-  // build upcoming
+  // Upcoming
   let upcomingHTML = '';
   if (upcomingItems.length === 0) {
-    upcomingHTML = `<div class="empty" style="padding:20px 0">暂无近期安排</div>`;
+    upcomingHTML = '<div class="empty-state">暂无近期安排</div>';
   } else {
-    upcomingItems.slice(0, 12).forEach(r => {
+    let uDelay = delay;
+    upcomingItems.slice(0, 16).forEach(r => {
       const d = daysUntil(r.start.split('T')[0]);
-      const dateStr = (() => {
-        const dt = new Date(r.start.split('T')[0] + 'T00:00:00');
-        return `${MONTHS[dt.getMonth()]}${dt.getDate()}日`;
-      })();
-      const daysLabel = d === 0 ? '今天' : d === 1 ? '明天' : `还有 ${d} 天`;
+      const dt = new Date(r.start.split('T')[0] + 'T00:00:00');
+      const dateStr = `${MONTHS_EN[dt.getMonth()]} ${String(dt.getDate()).padStart(2,'0')}`;
+      const daysLabel = d === 0 ? '今天' : d === 1 ? '明天' : `${d}d`;
       const doneClass = r.status === 'Done' ? 'done-line' : '';
+      const typeLabel = r.type === 'Event' ? 'Event' : 'Reminder';
       upcomingHTML += `
-        <div class="upcoming-card">
-          <div class="upcoming-date-label">${dateStr}</div>
+        <div class="upcoming-item" style="animation-delay:${uDelay}ms">
+          <div class="upcoming-meta">
+            <span class="upcoming-date">${dateStr}</span>
+            <span class="upcoming-days">${daysLabel}</span>
+          </div>
           <div class="upcoming-name ${doneClass}">${r.name}</div>
-          <div class="upcoming-days">${daysLabel}</div>
+          <span class="upcoming-type">${typeLabel}</span>
         </div>`;
+      uDelay += 40;
     });
   }
 
   document.getElementById('main-content').innerHTML = `
-    <div class="section-title">今日日程</div>
-    <div class="timeline">
-      <div class="tl-line"></div>
-      ${timelineHTML}
+    <div class="section-head">
+      <span class="label">今日日程</span>
+      <div class="rule"></div>
     </div>
-    <hr class="divider" />
-    <div class="section-title">即将到来</div>
-    <div class="upcoming-grid">${upcomingHTML}</div>
+    <div class="timeline">${timelineHTML}</div>
+    <div class="editorial-divider">
+      <div class="line"></div>
+      <span class="ornament">◆ ◆ ◆</span>
+      <div class="line"></div>
+    </div>
+    <div class="section-head">
+      <span class="label">即将到来</span>
+      <div class="rule"></div>
+    </div>
+    <div class="upcoming-list">${upcomingHTML}</div>
   `;
 }
 
@@ -467,14 +679,13 @@ async function fetchTasks() {
     render(tasks);
   } catch (e) {
     document.getElementById('main-content').innerHTML =
-      `<div class="empty">⚠ 加载失败：${e.message}<br><small>请确认 NOTION_TOKEN 和 DATABASE_ID 已配置</small></div>`;
+      `<div class="empty-state">加载失败：${e.message}<br><small style="color:var(--hint)">请确认 NOTION_TOKEN 和 DATABASE_ID 已配置</small></div>`;
   }
 }
 
 updateClock();
 setInterval(updateClock, 30000);
 fetchTasks();
-// 每5分钟自动刷新
 setInterval(fetchTasks, 5 * 60 * 1000);
 </script>
 </body>
