@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh" style="color-scheme: dark light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#121210" media="(prefers-color-scheme: dark)" />
 <title>Today</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,7 +81,11 @@
     max-width: 640px;
     margin: 0 auto;
     padding: 32px 28px 48px;
+    padding-left: max(28px, env(safe-area-inset-left));
+    padding-right: max(28px, env(safe-area-inset-right));
+    padding-bottom: max(48px, env(safe-area-inset-bottom));
     -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;
   }
 
   /* ---- MASTHEAD ---- */
@@ -107,6 +114,7 @@
     letter-spacing: -0.5px;
     line-height: 1.1;
     color: var(--text);
+    text-wrap: balance;
   }
 
   .masthead-date {
@@ -117,6 +125,7 @@
     color: var(--muted);
     text-align: right;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
 
   .masthead-subtitle {
@@ -161,6 +170,7 @@
     font-weight: 300;
     color: var(--hint);
     letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
   }
 
   /* ---- STATS ---- */
@@ -183,6 +193,7 @@
     font-family: 'JetBrains Mono', monospace;
     font-weight: 400;
     color: var(--text);
+    font-variant-numeric: tabular-nums;
   }
 
   /* ---- SECTION HEADING ---- */
@@ -238,6 +249,7 @@
     letter-spacing: 0.02em;
     padding-right: 12px;
     text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 
   .tl-indicator {
@@ -271,6 +283,10 @@
     font-size: 14px;
     color: var(--text);
     line-height: 1.4;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .tl-tag {
@@ -390,6 +406,7 @@
     font-weight: 300;
     color: var(--muted);
     letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
   }
 
   .upcoming-days {
@@ -402,6 +419,9 @@
     font-size: 13.5px;
     color: var(--text);
     line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .upcoming-type {
@@ -464,6 +484,15 @@
     }
   }
 
+  /* ---- REDUCED MOTION ---- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   /* ---- RESPONSIVE ---- */
   @media (max-width: 480px) {
     body { padding: 24px 20px 40px; }
@@ -488,7 +517,7 @@
 </header>
 
 <!-- DAY PROGRESS -->
-<div class="day-progress">
+<div class="day-progress" role="progressbar" aria-label="今日进度" aria-valuemin="0" aria-valuemax="100" id="day-progress">
   <div class="day-progress-track"></div>
   <div class="day-progress-fill" id="day-bar"></div>
   <div class="day-progress-labels">
@@ -499,13 +528,13 @@
 </div>
 
 <!-- STATS -->
-<div class="stat-line" id="stat-line">
+<div class="stat-line" id="stat-line" aria-live="polite">
   <span>加载中…</span>
 </div>
 
 <!-- MAIN -->
-<main id="main-content">
-  <div class="loading-state">LOADING…</div>
+<main id="main-content" aria-live="polite">
+  <div class="loading-state">Loading…</div>
 </main>
 
 <!-- FOOTER -->
@@ -551,8 +580,9 @@ function updateClock() {
   const m = String(now.getMinutes()).padStart(2,'0');
   document.getElementById('clock').textContent = h + ':' + m;
 
-  const pct = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
+  const pct = Math.round(((now.getHours() * 60 + now.getMinutes()) / 1440) * 100);
   document.getElementById('day-bar').style.width = pct + '%';
+  document.getElementById('day-progress').setAttribute('aria-valuenow', pct);
 
   const today = new Date(); today.setHours(0,0,0,0);
   document.getElementById('date-label').textContent = fmtDateEditorial(today);
@@ -596,9 +626,9 @@ function render(tasks) {
         nowInserted = true;
         timelineHTML += `
           <div class="now-marker">
-            <div class="now-pip"></div>
+            <div class="now-pip" aria-hidden="true"></div>
             <span class="now-text">Now</span>
-            <div class="now-rule"></div>
+            <div class="now-rule" aria-hidden="true"></div>
           </div>`;
       }
       const time = fmtTime(ev.start);
@@ -608,7 +638,7 @@ function render(tasks) {
       timelineHTML += `
         <div class="tl-item" style="animation-delay:${delay}ms">
           <div class="tl-time">${time}</div>
-          <div class="tl-indicator"><div class="tl-dot ${dotClass}"></div></div>
+          <div class="tl-indicator" aria-hidden="true"><div class="tl-dot ${dotClass}"></div></div>
           <div class="tl-body">
             <span class="tl-name ${doneClass}">${ev.name}</span>
             <span class="tl-tag ${tagClass}">${ev.type}</span>
@@ -619,9 +649,9 @@ function render(tasks) {
     if (!nowInserted) {
       timelineHTML += `
         <div class="now-marker">
-          <div class="now-pip"></div>
+          <div class="now-pip" aria-hidden="true"></div>
           <span class="now-text">Now</span>
-          <div class="now-rule"></div>
+          <div class="now-rule" aria-hidden="true"></div>
         </div>`;
     }
   }
@@ -655,17 +685,17 @@ function render(tasks) {
   document.getElementById('main-content').innerHTML = `
     <div class="section-head">
       <span class="label">今日日程</span>
-      <div class="rule"></div>
+      <div class="rule" aria-hidden="true"></div>
     </div>
     <div class="timeline">${timelineHTML}</div>
-    <div class="editorial-divider">
+    <div class="editorial-divider" aria-hidden="true">
       <div class="line"></div>
       <span class="ornament">◆ ◆ ◆</span>
       <div class="line"></div>
     </div>
     <div class="section-head">
       <span class="label">即将到来</span>
-      <div class="rule"></div>
+      <div class="rule" aria-hidden="true"></div>
     </div>
     <div class="upcoming-list">${upcomingHTML}</div>
   `;
